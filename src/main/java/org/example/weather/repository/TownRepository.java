@@ -1,8 +1,13 @@
 package org.example.weather.repository;
 
+import org.example.weather.entity.Town;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
-@Repository
-public class TownRepository {
+
+public interface TownRepository {
+
+    public Town get(Integer town_id);
+
+    public Town getByName(String name);
 }

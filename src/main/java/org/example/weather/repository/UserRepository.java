@@ -7,13 +7,11 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-@Repository
-@RequiredArgsConstructor
-public class UserRepository {
+public interface UserRepository {
 
-    private final JdbcTemplate jdbcTemplate;
+    public Optional<User> get(Integer id);
 
-    public Optional<User> get(Integer id) {
-        return Optional.empty();
-    }
+    public User create(Integer id);
+
+    public void update(User user);
 }
