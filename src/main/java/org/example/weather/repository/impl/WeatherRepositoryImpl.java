@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import tk.plogitech.darksky.forecast.model.DailyDataPoint;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 
@@ -58,6 +59,44 @@ public class WeatherRepositoryImpl implements WeatherRepository {
                 rowMapper,
                 Timestamp.from(end.toInstant()),
                 Timestamp.from(start.toInstant())
+        );
+    }
+
+    @Override
+    public void create(DailyDataPoint dataPoint, Town town) {
+        jdbcTemplate.update(
+                "insert into weather.forecast (" +
+                        "time, " +
+                        "summary, " +
+                        "apparentTemperatureHigh, " +
+                        "temperatureHigh, " +
+                        "apparentTemperatureLow, " +
+                        "temperatureLow, " +
+                        "cloudCover, " +
+                        "humidity, " +
+                        "pressure, " +
+                        "precipProbability, " +
+                        "precipType, " +
+                        "precipIntensity, " +
+                        "windBearing, " +
+                        "windSpeed, " +
+                        "id_Town) " +
+                        "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                Instant.from(dataPoint.getTime()),
+                dataPoint.getSummary(),
+                dataPoint.getApparentTemperatureHigh(),
+                dataPoint.getTemperatureHigh(),
+                dataPoint.getApparentTemperatureLow(),
+                dataPoint.getTemperatureLow(),
+                dataPoint.getCloudCover(),
+                dataPoint.getHumidity(),
+                dataPoint.getPressure(),
+                dataPoint.getPrecipProbability(),
+                dataPoint.getPrecipType(),
+                dataPoint.getPrecipIntensity(),
+                dataPoint.getWindBearing(),
+                dataPoint.getWindSpeed(),
+                town.getId()
         );
     }
 }

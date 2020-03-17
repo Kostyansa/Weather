@@ -12,4 +12,6 @@ public interface WeatherRepository {
     public DailyDataPoint get(Date date);
 
     public List<DailyDataPoint> getInDatesInTown(Date start, Date end, Town town);
+
+    public void create(DailyDataPoint dataPoint, Town town);
 }
