@@ -9,6 +9,7 @@ import com.vk.api.sdk.queries.messages.MessagesGetLongPollHistoryQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -19,7 +20,6 @@ import java.util.List;
 @Service
 public class VKService {
 
-    private int item;
     private int ts;
 
     private final VkApiClient vkApiClient;
@@ -34,21 +34,22 @@ public class VKService {
                 .getTs();
     }
 
-    public void sendMessage(String message, Integer userId){
-        try
-        {
+    public void sendMessage(String message, Integer userId, Integer messageId){
+        try {
             vkApiClient
                     .messages()
                     .sendWithUserIds(groupActor, new Integer[]{userId})
+                    .randomId(messageId)
                     .message(message)
                     .execute();
-            log.info(String.format("Sent a \"%s\" to %s", message, userId));
+            log.trace("Sent a {} to {} with message ID: {}", message, userId, messageId);
         }
         catch (ApiException | ClientException e) {
             log.debug("There was an Exception: ", e);
         }
     }
 
+    @Scheduled(fixedDelay = 3000)
     public void getMessages(){
         MessagesGetLongPollHistoryQuery eventsQuery = vkApiClient
                 .messages()
@@ -69,9 +70,9 @@ public class VKService {
     }
 
     @Async
-    public void response(Message message){
+    private void response(Message message){
         String response = commandService.execute(message);
-
+        sendMessage(response, message.getFromId(), message.getId());
     }
 
 

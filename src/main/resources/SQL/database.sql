@@ -3,7 +3,7 @@ START TRANSACTION;
 create SCHEMA weather;
 
 CREATE TABLE weather."user"(
-    id SERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     id_Town INT REFERENCES weather.town(id)
 );
 
