@@ -54,12 +54,17 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public void create(Integer id) {
-        //jdbcTemplate.update("insert into ");
+    public void create() {
+        jdbcTemplate.update("insert into weather.user (town_id) " +
+                "values(NULL)");
     }
 
     @Override
     public void update(User user) {
-
+        jdbcTemplate.update(
+                "update weather.user set town_id = ? where id = ?",
+                user.getTown().getId(),
+                user.getId()
+        );
     }
 }
