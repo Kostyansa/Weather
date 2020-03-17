@@ -1,9 +1,13 @@
 package org.example.weather.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.weather.entity.Town;
 import org.example.weather.entity.User;
 import org.example.weather.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import tk.plogitech.darksky.forecast.GeoCoordinates;
+import tk.plogitech.darksky.forecast.model.Latitude;
+import tk.plogitech.darksky.forecast.model.Longitude;
 
 import java.util.Optional;
 

@@ -38,7 +38,18 @@ public class WeatherService {
     }
 
     public Forecast getForecast(Town town) throws ForecastException {
-        return null;
+        ForecastRequestBuilder builder = new ForecastRequestBuilder();
+        ForecastRequest request = forecastRequestBuilder()
+                .key(apiKey)
+                .time(LocalDateTime.now().toInstant(ZoneOffset.UTC))
+                .location(town.getCoordinates())
+                .language(ForecastRequestBuilder.Language.ru)
+                .exclude(ForecastRequestBuilder.Block.alerts,
+                        ForecastRequestBuilder.Block.minutely,
+                        ForecastRequestBuilder.Block.flags)
+                .units(ForecastRequestBuilder.Units.si)
+                .build();
+        return darkSkyClient.forecast(request);
     }
 
     public Forecast getForecast(GeoCoordinates geoCoordinates) throws ForecastException {

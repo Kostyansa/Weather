@@ -8,10 +8,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.weather.entity.Request;
 import org.example.weather.entity.Town;
 import org.example.weather.entity.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import tk.plogitech.darksky.forecast.ForecastException;
+import tk.plogitech.darksky.forecast.model.*;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 
 @Service
@@ -45,10 +49,10 @@ public class CommandService {
             }
             case "погода":
             case "прогноз": {
-                return forecast(request, user, message.getGeo());
+                return forecast(request, user);
             }
             case "самый": {
-                return statistics(request, user, message.getGeo().getCoordinates());
+                return statistics(request, user);
             }
             default:
                 return "Команда не распознана";
@@ -103,7 +107,6 @@ public class CommandService {
             }
         }
         if (dataIndex == null) {
-            request.setTownName("");
             return request;
         }
         if (dataIndex + 1 < split.length) {
@@ -126,29 +129,41 @@ public class CommandService {
         return "Город успешно установлен";
     }
 
-    private String forecast(Request request, User user, Geo geo) {
+    private String forecast(Request request, User user) {
         Town town = townService.get(request.getTownName());
         if (town == null){
             town = user.getTown();
         }
         try {
             if (town == null) {
-                if (geo == null) {
-                    return "Нет доступа к координатам, пожалуйста укажите город";
+                if (request.getTownName().equals("")) {
+                    return "Пожалуйста укажите город";
                 }
-                return "В вашем районе погода " +
-                        weatherService.getForecast(geo.getCoordinates());
+                else {
+                    return "Город не найден";
+                }
             } else {
                 return "В городе " +
-                        town +
-                        weatherService.getForecast(town);
+                        town.getName() +
+                        forecastFormat(weatherService.getForecast(town));
             }
         } catch (ForecastException e) {
             return "Произошла ошибка на стороне сервера";
         }
     }
 
-    private String statistics(Request request, User user, GeoCoordinates geoCoordinates) {
+    private String statistics(Request request, User user) {
         return "В разработке";
+    }
+
+    private String forecastFormat(Forecast forecast){
+        StringBuilder stringBuilder = new StringBuilder();
+        Daily daily = forecast.getDaily();
+        for (DailyDataPoint dataPoint : daily.getData()){
+            stringBuilder.append("Прогноз на ")
+                    .append(LocalDate.ofInstant(dataPoint.getTime(), ZoneId.systemDefault()))
+                    .append(dataPoint.getTemperatureHigh());
+        }
+        return stringBuilder.toString();
     }
 }
