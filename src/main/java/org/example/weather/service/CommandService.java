@@ -2,6 +2,7 @@ package org.example.weather.service;
 
 import com.vk.api.sdk.objects.messages.Message;
 import lombok.RequiredArgsConstructor;
+import org.example.weather.entity.Town;
 import org.example.weather.entity.User;
 import org.springframework.stereotype.Service;
 
@@ -26,16 +27,16 @@ public class CommandService {
         String[] split = command.split(" ");
         switch (split[0]){
             case "установить": {
-                String town = parseTown(split);
-                Integer townId = townService.get(town);
-                return updateUser(townId, user);
+                String townName = parseTownName(split);
+                Town town = townService.get(townName);
+                return updateUser(town, user);
             }
             default:
                 return "Команда не распознана";
         }
     }
 
-    private String parseTown(String[] split){
+    private String parseTownName(String[] split){
         StringBuilder town = new StringBuilder();
         for (int i = 2; i < split.length; i++){
             town
@@ -45,14 +46,14 @@ public class CommandService {
         if (town.length() > 0) {
             town.deleteCharAt(town.length() - 1);
         }
-        return townService.toString();
+        return town.toString();
     }
 
-    private String updateUser(Integer townId, User user){
-        if (townId == null){
+    private String updateUser(Town town, User user){
+        if (town == null){
             return "Город не найден";
         }
-        user.setTownId(townId);
+        user.setTown(town);
         userService.update(user);
         return "Город успешно установлен";
     }
