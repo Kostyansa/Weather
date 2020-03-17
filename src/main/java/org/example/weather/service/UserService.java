@@ -1,19 +1,24 @@
 package org.example.weather.service;
 
+import lombok.RequiredArgsConstructor;
 import org.example.weather.entity.User;
+import org.example.weather.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
-    public Optional<User> get(Integer id){
-        return Optional.empty();
+    private final UserRepository userRepository;
+
+    public User get(Integer id){
+        return null;
     }
 
     public User create(Integer id){
-        return null;
+        return new User( (long) id, null);
     }
 
     public void update(User user){
