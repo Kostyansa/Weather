@@ -9,9 +9,9 @@ import java.util.Optional;
 
 public interface UserRepository {
 
-    public Optional<User> get(Integer id);
+    public User get(Integer id);
 
-    public User create(Integer id);
+    public void create(Integer id);
 
     public void update(User user);
 }

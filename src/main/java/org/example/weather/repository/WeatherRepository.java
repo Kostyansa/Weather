@@ -1,8 +1,7 @@
 package org.example.weather.repository;
 
 import org.example.weather.entity.Town;
-import org.springframework.stereotype.Repository;
-import tk.plogitech.darksky.forecast.model.Forecast;
+import tk.plogitech.darksky.forecast.model.DailyDataPoint;
 
 import java.util.Date;
 import java.util.List;
@@ -10,7 +9,7 @@ import java.util.List;
 
 public interface WeatherRepository {
 
-    public Forecast get(Date date);
+    public DailyDataPoint get(Date date);
 
-    public List<Forecast> getInDatesInTown(Date start, Date end, Town town);
+    public List<DailyDataPoint> getInDatesInTown(Date start, Date end, Town town);
 }

@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 public interface TownRepository {
 
-    public Town get(Integer town_id);
+    public Town get(Integer id);
 
     public Town getByName(String name);
 }
