@@ -17,8 +17,8 @@ public class VKConfiguration {
 
     @Bean
     public GroupActor groupActor(
-            @Value("${Vkontakte.group_id}") Integer group_id,
-            @Value("${Vkontakte.access_token}") String access_token){
+            @Value("${vkontakte.group_id}") Integer group_id,
+            @Value("${vkontakte.access_token}") String access_token){
         return new GroupActor(group_id, access_token);
     }
 }

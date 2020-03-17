@@ -1,7 +1,7 @@
-Vkontakte:
+vkontakte:
   access_token: ed200f8b1bfa7814978eb93aca12ea84d4b62d4af684c993c320175495a444c534afcc5afb634b96c877e
   group_id: 187855882
-DarkSky:
+darkSky:
   key: b8261bf0399a92f40a05d88343cd02ec
 
 spring:
