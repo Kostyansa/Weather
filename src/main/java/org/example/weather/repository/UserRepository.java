@@ -11,7 +11,7 @@ public interface UserRepository {
 
     public User get(Integer id);
 
-    public void create();
+    public void create(Integer id);
 
     public void update(User user);
 }
