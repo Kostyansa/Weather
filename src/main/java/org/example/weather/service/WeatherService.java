@@ -9,11 +9,16 @@ import org.springframework.beans.factory.annotation.Lookup;
 import org.springframework.stereotype.Service;
 import tk.plogitech.darksky.api.jackson.DarkSkyJacksonClient;
 import tk.plogitech.darksky.forecast.*;
+import tk.plogitech.darksky.forecast.model.Daily;
 import tk.plogitech.darksky.forecast.model.DailyDataPoint;
 import tk.plogitech.darksky.forecast.model.Forecast;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -65,5 +70,41 @@ public class WeatherService {
                 .units(ForecastRequestBuilder.Units.si)
                 .build();
         return darkSkyClient.forecast(request);
+    }
+
+    public Forecast getMostYear(Town town, String type, LocalDate start, LocalDate end){
+        Forecast forecast = new Forecast();
+        forecast.setDaily(new Daily());
+        forecast.getDaily().setData(
+                Collections.singletonList(weatherRepository.getTopOneInDatesInTownGroupByYearOrderByField(type, start, end, town))
+        );
+        return forecast;
+    }
+
+    public Forecast getMostMonth(Town town, String type, LocalDate start, LocalDate end){
+        Forecast forecast = new Forecast();
+        forecast.setDaily(new Daily());
+        forecast.getDaily().setData(
+                Collections.singletonList(weatherRepository.getTopOneInDatesInTownGroupByMonthOrderByField(type, start, end, town))
+        );
+        return forecast;
+    }
+
+    public Forecast getMostInDates(Town town, String type, LocalDate start, LocalDate end){
+        Forecast forecast = new Forecast();
+        forecast.setDaily(new Daily());
+        forecast.getDaily().setData(
+                Collections.singletonList(weatherRepository.getTopOneInDatesInTownOrderByField(type, start, end, town))
+        );
+        return forecast;
+    }
+
+    public Forecast getAverage(Town town, LocalDate start, LocalDate end){
+        Forecast forecast = new Forecast();
+        forecast.setDaily(new Daily());
+        forecast.getDaily().setData(
+                Collections.singletonList(weatherRepository.getAverageInDatesInTown(start, end, town))
+        );
+        return forecast;
     }
 }
