@@ -1,22 +1,18 @@
 package org.example.weather.service;
 
-import com.vk.api.sdk.objects.base.Geo;
-import com.vk.api.sdk.objects.base.GeoCoordinates;
 import com.vk.api.sdk.objects.messages.Message;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.weather.entity.Request;
 import org.example.weather.entity.Town;
 import org.example.weather.entity.User;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import tk.plogitech.darksky.forecast.ForecastException;
 import tk.plogitech.darksky.forecast.model.*;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.*;
+import java.time.temporal.ChronoUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -52,7 +48,16 @@ public class CommandService {
                 return forecast(request, user);
             }
             case "самый": {
-                return statistics(request, user);
+                if (split.length < 3) {
+                    return "Неправильный формат команды";
+                }
+                return theMost(request, user);
+            }
+            case "Статистика": {
+                if (split.length < 3) {
+                    return "Неправильный формат команды";
+                }
+                return average(request, user);
             }
             default:
                 return "Команда не распознана";
@@ -118,6 +123,24 @@ public class CommandService {
         return request;
     }
 
+    private ChronoUnit exctractTimeUnit(String string) {
+        switch (string) {
+            case "День": {
+                return ChronoUnit.DAYS;
+            }
+            case "Месяц": {
+                return ChronoUnit.MONTHS;
+            }
+            case "Год": {
+                return ChronoUnit.YEARS;
+            }
+            default: {
+                return null;
+            }
+        }
+
+    }
+
     private String updateUser(Request request, User user) {
         String townName = request.getTownName();
         Town town = townService.get(townName);
@@ -131,17 +154,12 @@ public class CommandService {
 
     private String forecast(Request request, User user) {
         Town town = townService.get(request.getTownName());
-        if (town == null){
+        if (town == null) {
             town = user.getTown();
         }
         try {
             if (town == null) {
-                if (request.getTownName().equals("")) {
-                    return "Пожалуйста укажите город";
-                }
-                else {
-                    return "Город не найден";
-                }
+                return "Пожалуйста укажите город";
             } else {
                 return "В городе " +
                         town.getName() +
@@ -152,17 +170,113 @@ public class CommandService {
         }
     }
 
-    private String statistics(Request request, User user) {
-        return "В разработке";
+    private String theMost(Request request, User user) {
+        String typeString = request.getSplit()[1];
+        ChronoUnit time = exctractTimeUnit(request.getSplit()[2]);
+        Town town = townService.get(request.getTownName());
+        if (request.getEnd() == null) {
+            return "Не указан промежуток";
+        }
+        String type = "";
+        if (town == null) {
+            town = user.getTown();
+        }
+        switch (typeString) {
+            case "Холодный": {
+                type = "TemperatureLow";
+                break;
+            }
+            case "Жаркий": {
+                type = "TemperatureHigh";
+                break;
+            }
+            case "Ветреный": {
+                type = "WindSpeed";
+                break;
+            }
+            default: {
+                return "Неправильный формат команды";
+            }
+        }
+        Forecast forecast = null;
+        switch (time) {
+            case DAYS: {
+                forecast = weatherService.getMostInDates(
+                        town,
+                        type,
+                        request.getStart(),
+                        request.getEnd());
+                break;
+            }
+            case MONTHS: {
+                forecast = weatherService.getMostMonth(
+                        town,
+                        type,
+                        request.getStart(),
+                        request.getEnd());
+                break;
+            }
+            case YEARS: {
+                forecast = weatherService.getMostYear(
+                        town,
+                        type,
+                        request.getStart(),
+                        request.getEnd());
+                break;
+            }
+            default: {
+                return "Не указан промежуток";
+            }
+        }
+        return mostFormat(forecast, time, request.getStart(), request.getEnd());
     }
 
-    private String forecastFormat(Forecast forecast){
+    private String average(Request request, User user) {
+        Town town = townService.get(request.getTownName());
+        if (town == null) {
+            town = user.getTown();
+        }
+        if (town == null) {
+            return "Пожалуйста укажите город";
+        }
+        if (request.getEnd() == null){
+            return "Не указан промежуток";
+        }
+        return averageFormat(
+                weatherService.getAverage(town, request.getStart(), request.getEnd()),
+                request.getStart(),
+                request.getEnd());
+    }
+
+    private String forecastFormat(Forecast forecast) {
         StringBuilder stringBuilder = new StringBuilder();
         Daily daily = forecast.getDaily();
-        for (DailyDataPoint dataPoint : daily.getData()){
+        for (DailyDataPoint dataPoint : daily.getData()) {
             stringBuilder.append("Прогноз на ")
                     .append(LocalDate.ofInstant(dataPoint.getTime(), ZoneId.systemDefault()))
-                    .append(dataPoint.getTemperatureHigh());
+                    .append(dataPoint.getSummary());
+        }
+        return stringBuilder.toString();
+    }
+
+    private String mostFormat(Forecast forecast, ChronoUnit chronoUnit, LocalDate start, LocalDate end) {
+        StringBuilder stringBuilder = new StringBuilder();
+        Daily daily = forecast.getDaily();
+        for (DailyDataPoint dataPoint : daily.getData()) {
+            stringBuilder.append("Прогноз на ")
+                    .append(LocalDate.ofInstant(dataPoint.getTime(), ZoneId.systemDefault()))
+                    .append(dataPoint.getSummary());
+        }
+        return stringBuilder.toString();
+    }
+
+    private String averageFormat(Forecast forecast, LocalDate start, LocalDate end) {
+        StringBuilder stringBuilder = new StringBuilder();
+        Daily daily = forecast.getDaily();
+        for (DailyDataPoint dataPoint : daily.getData()) {
+            stringBuilder.append("Прогноз на ")
+                    .append(LocalDate.ofInstant(dataPoint.getTime(), ZoneId.systemDefault()))
+                    .append(dataPoint.getSummary());
         }
         return stringBuilder.toString();
     }
