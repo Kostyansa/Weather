@@ -29,7 +29,7 @@ CREATE TABLE weather.forecast(
     precipIntensity NUMERIC,
     windBearing INT,
     windSpeed NUMERIC,
-    id_Town INT REFERENCES weather.tow(id)
+    id_Town INT REFERENCES weather.town(id)
 );
 
 COMMIT;

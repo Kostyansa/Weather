@@ -1,6 +1,7 @@
 package org.example.weather.repository.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.MethodNotSupportedException;
 import org.example.weather.entity.Town;
 import org.example.weather.entity.User;
@@ -17,6 +18,7 @@ import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
+@Slf4j
 public class UserRepositoryImpl implements UserRepository {
 
     private final JdbcTemplate jdbcTemplate;
@@ -24,7 +26,7 @@ public class UserRepositoryImpl implements UserRepository {
     private RowMapper<User> rowMapper = (rowStr, rowNum) -> new User(
             rowStr.getLong("id"),
             new Town(
-                    rowStr.getLong("town_id"),
+                    rowStr.getLong("id_town"),
                     rowStr.getString("town_name"),
                             new GeoCoordinates(
                                     new Longitude(rowStr.getDouble("town_longitude")),
@@ -38,31 +40,32 @@ public class UserRepositoryImpl implements UserRepository {
         try {
             return jdbcTemplate.queryForObject(
                 "select u.id as \"id\", " +
-                        "t.id as \"town_id\", " +
+                        "t.id as \"id_town\", " +
                         "t.name as \"town_name\", " +
-                        "t.longitude as \"town_longitude\" " +
+                        "t.longitude as \"town_longitude\", " +
                         "t.latitude as \"town_latitude\" " +
-                        "from weather.\"user\" as u inner join weather.town as t on " +
-                        "u.town_id = t.id where id = ?;",
+                        "from weather.user as u left join weather.town as t on " +
+                        "u.id_town = t.id where u.id = ?;",
                 rowMapper,
                 id
             );
         }
         catch (EmptyResultDataAccessException e){
+            log.debug("User with id {} was not found", id);
             return null;
         }
     }
 
     @Override
     public void create(Integer id) {
-        jdbcTemplate.update("insert into weather.user (id, town_id) " +
+        jdbcTemplate.update("insert into weather.user (id, id_town) " +
                 "values(?, NULL)", id);
     }
 
     @Override
     public void update(User user) {
         jdbcTemplate.update(
-                "update weather.user set town_id = ? where id = ?",
+                "update weather.user set id_town = ? where id = ?",
                 user.getTown().getId(),
                 user.getId()
         );

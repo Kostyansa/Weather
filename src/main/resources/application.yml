@@ -6,7 +6,7 @@ darkSky:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/weather
+    url: jdbc:postgresql://localhost:5432/postgres
     username: postgres
-    password: 963214
+    password: postgres
     driver-class-name: org.postgresql.Driver

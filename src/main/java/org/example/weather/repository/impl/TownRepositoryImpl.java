@@ -29,7 +29,7 @@ public class TownRepositoryImpl implements TownRepository {
     public Town get(Integer id) {
         try{
             return jdbcTemplate.queryForObject(
-                    "select id, name, longitude, latitude from weather.user where id = ?;",
+                    "select id, name, longitude, latitude from weather.town where id = ?;",
                     rowMapper,
                     id
             );
@@ -44,7 +44,7 @@ public class TownRepositoryImpl implements TownRepository {
 
         try{
             return jdbcTemplate.queryForObject(
-                    "select id, name, longitude, latitude from weather.user where name = ?;",
+                    "select id, name, longitude, latitude from weather.town where name = ?;",
                     rowMapper,
                     name
             );
