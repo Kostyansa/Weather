@@ -18,13 +18,15 @@ public class UserService {
     private final UserRepository userRepository;
 
     public User get(Integer id){
-        return null;
+        return userRepository.get(id);
     }
 
     public User create(Integer id){
+        userRepository.create(id);
         return new User( (long) id, null);
     }
 
     public void update(User user){
+        userRepository.update(user);
     }
 }

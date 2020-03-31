@@ -12,6 +12,6 @@ public class TownService {
     private final TownRepository townRepository;
 
     Town get(String town){
-        return null;
+        return townRepository.getByName(town);
     }
 }

@@ -77,20 +77,22 @@ public class CommandService {
         Integer townIndex = null;
         for (int i = 1; i < split.length - 1; i++) {
             if (split[i].equalsIgnoreCase("Город")) {
-                townIndex = i;
+                townIndex = i + 1;
                 break;
             }
         }
         if (townIndex == null) {
             request.setTownName("");
+            return request;
         }
         StringBuilder townName = new StringBuilder();
-        for (String s : split) {
-            if (s.equalsIgnoreCase("Дата")) {
+        for (int i = townIndex; i < split.length; i++) {
+            if (split[i].equalsIgnoreCase("Дата")) {
                 break;
             }
-            townName.append(s.toLowerCase()).append(" ");
+            townName.append(split[i].toLowerCase()).append(" ");
         }
+        townName.delete(townName.length() - 1, townName.length());
         request.setTownName(townName.toString());
         return request;
     }
@@ -145,6 +147,7 @@ public class CommandService {
         String townName = request.getTownName();
         Town town = townService.get(townName);
         if (town == null) {
+            log.debug("Town name: {}", townName);
             return "Город не найден";
         }
         user.setTown(town);
@@ -166,6 +169,7 @@ public class CommandService {
                         forecastFormat(weatherService.getForecast(town));
             }
         } catch (ForecastException e) {
+            log.debug("API Exception", e);
             return "Произошла ошибка на стороне сервера";
         }
     }
