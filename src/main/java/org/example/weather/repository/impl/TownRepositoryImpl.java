@@ -11,6 +11,8 @@ import tk.plogitech.darksky.forecast.GeoCoordinates;
 import tk.plogitech.darksky.forecast.model.Latitude;
 import tk.plogitech.darksky.forecast.model.Longitude;
 
+import java.util.List;
+
 @Repository
 @RequiredArgsConstructor
 public class TownRepositoryImpl implements TownRepository {
@@ -27,29 +29,36 @@ public class TownRepositoryImpl implements TownRepository {
 
     @Override
     public Town get(Integer id) {
-        try{
+        try {
             return jdbcTemplate.queryForObject(
                     "select id, name, longitude, latitude from weather.town where id = ?;",
                     rowMapper,
                     id
             );
-        }
-        catch (EmptyResultDataAccessException e){
+        } catch (EmptyResultDataAccessException e) {
             return null;
         }
     }
 
     @Override
+    public List<Town> get() {
+        return jdbcTemplate.query(
+                "select id, name, longitude, latitude from weather.town;",
+                rowMapper
+        );
+    }
+
+
+    @Override
     public Town getByName(String name) {
 
-        try{
+        try {
             return jdbcTemplate.queryForObject(
                     "select id, name, longitude, latitude from weather.town where name = ?;",
                     rowMapper,
                     name
             );
-        }
-        catch (EmptyResultDataAccessException e){
+        } catch (EmptyResultDataAccessException e) {
             return null;
         }
     }
