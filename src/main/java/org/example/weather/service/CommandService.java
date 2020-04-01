@@ -53,11 +53,20 @@ public class CommandService {
                 }
                 return theMost(request, user);
             }
-            case "Статистика": {
+            case "статистика": {
                 if (split.length < 3) {
                     return "Неправильный формат команды";
                 }
                 return average(request, user);
+            }
+            case "updateforecast":{
+                try {
+                    weatherService.updateForecast();
+                    return "Updated";
+                }
+                catch (Exception exc){
+                    return exc.getMessage();
+                }
             }
             default:
                 return "Команда не распознана";
