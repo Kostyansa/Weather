@@ -13,6 +13,7 @@ import tk.plogitech.darksky.forecast.model.DailyDataPoint;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -204,8 +205,24 @@ public class WeatherRepositoryImpl implements WeatherRepository {
                         "windBearing, " +
                         "windSpeed, " +
                         "id_Town) " +
-                        "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                Instant.from(dataPoint.getTime()),
+                        "values" +
+                        "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+                        "on conflict(time) do update " +
+                        "set " +
+                        "summary = excluded.summary, " +
+                        "apparentTemperatureHigh  = excluded.apparentTemperatureHigh, " +
+                        "temperatureHigh = excluded.temperatureHigh, " +
+                        "apparentTemperatureLow = excluded.apparentTemperatureLow, " +
+                        "temperatureLow = excluded.temperatureLow, " +
+                        "cloudCover = excluded.cloudCover, " +
+                        "humidity = excluded.humidity, " +
+                        "pressure = excluded.pressure, " +
+                        "precipProbability = excluded.precipProbability, " +
+                        "precipType = excluded.precipType, " +
+                        "precipIntensity = excluded.precipIntensity, " +
+                        "windBearing = excluded.windBearing, " +
+                        "windSpeed = excluded.windSpeed;",
+                Timestamp.from(dataPoint.getTime()),
                 dataPoint.getSummary(),
                 dataPoint.getApparentTemperatureHigh(),
                 dataPoint.getTemperatureHigh(),
