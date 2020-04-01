@@ -2,10 +2,14 @@ package org.example.weather.service;
 
 import com.vk.api.sdk.objects.base.GeoCoordinates;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.weather.entity.Town;
+import org.example.weather.repository.TownRepository;
 import org.example.weather.repository.WeatherRepository;
 import org.example.weather.service.mapper.GeoCoordinatesMapper;
 import org.springframework.beans.factory.annotation.Lookup;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import tk.plogitech.darksky.api.jackson.DarkSkyJacksonClient;
 import tk.plogitech.darksky.forecast.*;
@@ -13,6 +17,7 @@ import tk.plogitech.darksky.forecast.model.Daily;
 import tk.plogitech.darksky.forecast.model.DailyDataPoint;
 import tk.plogitech.darksky.forecast.model.Forecast;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -24,6 +29,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class WeatherService {
 
 
@@ -31,6 +37,8 @@ public class WeatherService {
     private final GeoCoordinatesMapper geoCoordinatesMapper;
 
     private final WeatherRepository weatherRepository;
+
+    private final TownService townService;
 
     private final APIKey apiKey;
 
@@ -40,6 +48,50 @@ public class WeatherService {
 
     public List<DailyDataPoint> getHistoryFor(Date start, Town town){
         return null;
+    }
+
+    @Scheduled(fixedDelay = 21600000)
+    public void updateForecast(){
+        List<Town> townList = townService.get();
+        for (Town town : townList){
+            updateForecast(town);
+        }
+    }
+
+    @Async
+    private void updateForecast(Town town){
+        LocalDate localDate = LocalDate.now();
+        for (int i = 0; i < 7; i++){
+            Instant instant = localDate.plusDays(i).atStartOfDay().toInstant(ZoneOffset.UTC);
+            try {
+                weatherRepository.create(
+                        getForecast(town, instant).getDaily().getData().get(0),
+                        town
+                );
+            }
+            catch (ForecastException exc){
+                log.debug("There was a problem with connecting to API", exc);
+            }
+            catch (NullPointerException | IndexOutOfBoundsException exc){
+                log.debug("Data for date: {} was not found", instant, exc);
+            }
+        }
+    }
+
+    public Forecast getForecast(Town town, Instant time) throws ForecastException {
+        ForecastRequestBuilder builder = new ForecastRequestBuilder();
+        ForecastRequest request = forecastRequestBuilder()
+                .key(apiKey)
+                .time(LocalDateTime.now().toInstant(ZoneOffset.UTC))
+                .location(town.getCoordinates())
+                .language(ForecastRequestBuilder.Language.ru)
+                .exclude(ForecastRequestBuilder.Block.alerts,
+                        ForecastRequestBuilder.Block.minutely,
+                        ForecastRequestBuilder.Block.flags)
+                .units(ForecastRequestBuilder.Units.si)
+                .time(time)
+                .build();
+        return darkSkyClient.forecast(request);
     }
 
     public Forecast getForecast(Town town) throws ForecastException {
