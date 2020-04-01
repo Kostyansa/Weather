@@ -10,8 +10,6 @@ import java.util.List;
 
 public interface WeatherRepository {
 
-    public DailyDataPoint get(LocalDate date);
-
     public List<DailyDataPoint> getInDatesInTown(LocalDate start, LocalDate end, Town town);
 
     DailyDataPoint getTopOneInDatesInTownOrderByField(String field, LocalDate start, LocalDate end, Town town);

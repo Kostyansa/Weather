@@ -13,6 +13,7 @@ import tk.plogitech.darksky.forecast.model.*;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -59,12 +60,11 @@ public class CommandService {
                 }
                 return average(request, user);
             }
-            case "updateforecast":{
+            case "updateforecast": {
                 try {
                     weatherService.updateForecast();
                     return "Updated";
-                }
-                catch (Exception exc){
+                } catch (Exception exc) {
                     return exc.getMessage();
                 }
             }
@@ -169,17 +169,12 @@ public class CommandService {
         if (town == null) {
             town = user.getTown();
         }
-        try {
-            if (town == null) {
-                return "Пожалуйста укажите город";
-            } else {
-                return "В городе " +
-                        town.getName() +
-                        forecastFormat(weatherService.getForecast(town));
-            }
-        } catch (ForecastException e) {
-            log.debug("API Exception", e);
-            return "Произошла ошибка на стороне сервера";
+        if (town == null) {
+            return "Пожалуйста укажите город";
+        } else {
+            return "В городе " +
+                    town.getName() +
+                    forecastFormat(weatherService.getDailyDataPoint(town, LocalDate.now(), LocalDate.now().plusDays(7)));
         }
     }
 
@@ -252,7 +247,7 @@ public class CommandService {
         if (town == null) {
             return "Пожалуйста укажите город";
         }
-        if (request.getEnd() == null){
+        if (request.getEnd() == null) {
             return "Не указан промежуток";
         }
         return averageFormat(
@@ -261,13 +256,13 @@ public class CommandService {
                 request.getEnd());
     }
 
-    private String forecastFormat(Forecast forecast) {
+    private String forecastFormat(List<DailyDataPoint> dataPoints) {
         StringBuilder stringBuilder = new StringBuilder();
-        Daily daily = forecast.getDaily();
-        for (DailyDataPoint dataPoint : daily.getData()) {
+        for (DailyDataPoint dataPoint : dataPoints) {
             stringBuilder.append("Прогноз на ")
                     .append(LocalDate.ofInstant(dataPoint.getTime(), ZoneId.systemDefault()))
-                    .append(dataPoint.getSummary());
+                    .append(dataPoint.getSummary())
+                    .append('\n');
         }
         return stringBuilder.toString();
     }

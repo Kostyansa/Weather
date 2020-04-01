@@ -37,6 +37,7 @@ public class WeatherRepositoryImpl implements WeatherRepository {
             .setPrecipIntensity(rowStr.getDouble("precipIntensity"))
             .setWindBearing(rowStr.getInt("windBearing"))
             .setWindSpeed(rowStr.getDouble("windSpeed"))
+            .setSummary(rowStr.getString("summary"))
             .build();
 
     private RowMapper<DailyDataPoint> groupRowMapper = (rowStr, rowNum) -> new DailyDataPointBuilder()
@@ -52,27 +53,13 @@ public class WeatherRepositoryImpl implements WeatherRepository {
             .build();
 
     @Override
-    public DailyDataPoint get(LocalDate date) {
-        try {
-            return jdbcTemplate.queryForObject(
-                    "select * from weather.forecast where time = ?;",
-                    rowMapper,
-                    Timestamp.from(Instant.from(date))
-            );
-        }
-        catch (EmptyResultDataAccessException e){
-            return null;
-        }
-    }
-
-    @Override
     public List<DailyDataPoint> getInDatesInTown(LocalDate start, LocalDate end, Town town) {
         return jdbcTemplate.query(
 
                 "select * from weather.forecast where time between ? and ? and id_Town = ?;",
                 rowMapper,
-                Timestamp.from(Instant.from(start)),
-                Timestamp.from(Instant.from(end)),
+                Timestamp.valueOf(start.atStartOfDay()),
+                Timestamp.valueOf(end.atStartOfDay()),
                 town.getId()
         );
     }
@@ -83,8 +70,8 @@ public class WeatherRepositoryImpl implements WeatherRepository {
             return jdbcTemplate.queryForObject(
                     "select * from weather.forecast where time between ? and ? and id_Town = ? order by ? limit 1;",
                     rowMapper,
-                    Timestamp.from(Instant.from(start)),
-                    Timestamp.from(Instant.from(end)),
+                    Timestamp.valueOf(start.atStartOfDay()),
+                    Timestamp.valueOf(end.atStartOfDay()),
                     town.getId(),
                     field
             );
@@ -115,8 +102,8 @@ public class WeatherRepositoryImpl implements WeatherRepository {
                             "group by period " +
                             "order by ? limit 1;",
                     groupRowMapper,
-                    Timestamp.from(Instant.from(start.withDayOfMonth(1))),
-                    Timestamp.from(Instant.from(end.withDayOfMonth(1))),
+                    Timestamp.valueOf(start.withDayOfMonth(1).atStartOfDay()),
+                    Timestamp.valueOf(end.withDayOfMonth(1).atStartOfDay()),
                     town.getId(),
                     field
             );
@@ -147,8 +134,8 @@ public class WeatherRepositoryImpl implements WeatherRepository {
                             "group by period " +
                             "order by ? limit 1;",
                     groupRowMapper,
-                    Timestamp.from(Instant.from(start.withDayOfYear(1))),
-                    Timestamp.from(Instant.from(end.withDayOfYear(1))),
+                    Timestamp.valueOf(start.withDayOfYear(1).atStartOfDay()),
+                    Timestamp.valueOf(end.withDayOfYear(1).atStartOfDay()),
                     town.getId(),
                     field
             );
@@ -176,8 +163,8 @@ public class WeatherRepositoryImpl implements WeatherRepository {
                             "where time between ? and ? " +
                             "and id_Town = ?;",
                     groupRowMapper,
-                    Timestamp.from(Instant.from(start.withDayOfMonth(1))),
-                    Timestamp.from(Instant.from(end.withDayOfMonth(1))),
+                    Timestamp.valueOf(start.withDayOfMonth(1).atStartOfDay()),
+                    Timestamp.valueOf(end.withDayOfMonth(1).atStartOfDay()),
                     town.getId()
             );
         }

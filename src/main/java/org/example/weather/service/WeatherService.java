@@ -42,37 +42,35 @@ public class WeatherService {
 
     private final APIKey apiKey;
 
-    private ForecastRequestBuilder forecastRequestBuilder(){
+    private ForecastRequestBuilder forecastRequestBuilder() {
         return new ForecastRequestBuilder();
     }
 
-    public List<DailyDataPoint> getHistoryFor(Date start, Town town){
+    public List<DailyDataPoint> getHistoryFor(Date start, Town town) {
         return null;
     }
 
     @Scheduled(fixedDelay = 21600000)
-    public void updateForecast(){
+    public void updateForecast() {
         List<Town> townList = townService.get();
-        for (Town town : townList){
+        for (Town town : townList) {
             updateForecast(town);
         }
     }
 
     @Async
-    private void updateForecast(Town town){
+    private void updateForecast(Town town) {
         LocalDate localDate = LocalDate.now();
-        for (int i = 0; i < 7; i++){
+        for (int i = 0; i < 7; i++) {
             Instant instant = localDate.plusDays(i).atStartOfDay().toInstant(ZoneOffset.UTC);
             try {
                 weatherRepository.create(
                         getForecast(town, instant).getDaily().getData().get(0),
                         town
                 );
-            }
-            catch (ForecastException exc){
+            } catch (ForecastException exc) {
                 log.debug("There was a problem with connecting to API", exc);
-            }
-            catch (NullPointerException | IndexOutOfBoundsException exc){
+            } catch (NullPointerException | IndexOutOfBoundsException exc) {
                 log.debug("Data for date: {} was not found", instant, exc);
             }
         }
@@ -124,7 +122,11 @@ public class WeatherService {
         return darkSkyClient.forecast(request);
     }
 
-    public Forecast getMostYear(Town town, String type, LocalDate start, LocalDate end){
+    public List<DailyDataPoint> getDailyDataPoint(Town town, LocalDate start, LocalDate end) {
+        return weatherRepository.getInDatesInTown(start, end, town);
+    }
+
+    public Forecast getMostYear(Town town, String type, LocalDate start, LocalDate end) {
         Forecast forecast = new Forecast();
         forecast.setDaily(new Daily());
         forecast.getDaily().setData(
@@ -133,7 +135,7 @@ public class WeatherService {
         return forecast;
     }
 
-    public Forecast getMostMonth(Town town, String type, LocalDate start, LocalDate end){
+    public Forecast getMostMonth(Town town, String type, LocalDate start, LocalDate end) {
         Forecast forecast = new Forecast();
         forecast.setDaily(new Daily());
         forecast.getDaily().setData(
@@ -142,7 +144,7 @@ public class WeatherService {
         return forecast;
     }
 
-    public Forecast getMostInDates(Town town, String type, LocalDate start, LocalDate end){
+    public Forecast getMostInDates(Town town, String type, LocalDate start, LocalDate end) {
         Forecast forecast = new Forecast();
         forecast.setDaily(new Daily());
         forecast.getDaily().setData(
@@ -151,7 +153,7 @@ public class WeatherService {
         return forecast;
     }
 
-    public Forecast getAverage(Town town, LocalDate start, LocalDate end){
+    public Forecast getAverage(Town town, LocalDate start, LocalDate end) {
         Forecast forecast = new Forecast();
         forecast.setDaily(new Daily());
         forecast.getDaily().setData(
