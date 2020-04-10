@@ -12,6 +12,8 @@ public interface WeatherRepository {
 
     public List<DailyDataPoint> getInDatesInTown(LocalDate start, LocalDate end, Town town);
 
+    LocalDate getMinDateForTown(Town town);
+
     DailyDataPoint getTopOneInDatesInTownOrderByField(String field, LocalDate start, LocalDate end, Town town);
 
     DailyDataPoint getTopOneInDatesInTownGroupByMonthOrderByField

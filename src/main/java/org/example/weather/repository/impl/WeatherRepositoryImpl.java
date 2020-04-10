@@ -65,15 +65,28 @@ public class WeatherRepositoryImpl implements WeatherRepository {
     }
 
     @Override
+    public LocalDate getMinDateForTown(Town town){
+        try {
+            return jdbcTemplate.queryForObject(
+                    "select min(time) from weather.forecast where id_Town = ?;",
+                    LocalDate.class,
+                    town.getId()
+            );
+        }
+        catch (EmptyResultDataAccessException exc){
+            return null;
+        }
+    }
+
+    @Override
     public DailyDataPoint getTopOneInDatesInTownOrderByField(String field, LocalDate start, LocalDate end, Town town){
         try {
             return jdbcTemplate.queryForObject(
-                    "select * from weather.forecast where time between ? and ? and id_Town = ? order by ? limit 1;",
+                    String.format("select * from weather.forecast where time between ? and ? and id_Town = ? order by %s limit 1;", field),
                     rowMapper,
                     Timestamp.valueOf(start.atStartOfDay()),
                     Timestamp.valueOf(end.atStartOfDay()),
-                    town.getId(),
-                    field
+                    town.getId()
             );
         }
         catch (EmptyResultDataAccessException e){
@@ -86,7 +99,7 @@ public class WeatherRepositoryImpl implements WeatherRepository {
             (String field, LocalDate start, LocalDate end, Town town){
         try {
             return jdbcTemplate.queryForObject(
-                    "select " +
+                    String.format("select " +
                             "date_trunc('month', time) as period, " +
                             "avg(apparentTemperatureHigh), " +
                             "avg(temperatureHigh), " +
@@ -100,12 +113,11 @@ public class WeatherRepositoryImpl implements WeatherRepository {
                             "where time between ? and ? " +
                             "and id_Town = ? " +
                             "group by period " +
-                            "order by ? limit 1;",
+                            "order by %s limit 1;", field),
                     groupRowMapper,
                     Timestamp.valueOf(start.withDayOfMonth(1).atStartOfDay()),
                     Timestamp.valueOf(end.withDayOfMonth(1).atStartOfDay()),
-                    town.getId(),
-                    field
+                    town.getId()
             );
         }
         catch (EmptyResultDataAccessException e){
@@ -118,7 +130,7 @@ public class WeatherRepositoryImpl implements WeatherRepository {
             (String field, LocalDate start, LocalDate end, Town town){
         try {
             return jdbcTemplate.queryForObject(
-                    "select " +
+                    String.format("select " +
                             "date_trunc('year', time) as period, " +
                             "avg(apparentTemperatureHigh), " +
                             "avg(temperatureHigh), " +
@@ -132,12 +144,11 @@ public class WeatherRepositoryImpl implements WeatherRepository {
                             "where time between ? and ? " +
                             "and id_Town = ? " +
                             "group by period " +
-                            "order by ? limit 1;",
+                            "order by %s limit 1;", field),
                     groupRowMapper,
                     Timestamp.valueOf(start.withDayOfYear(1).atStartOfDay()),
                     Timestamp.valueOf(end.withDayOfYear(1).atStartOfDay()),
-                    town.getId(),
-                    field
+                    town.getId()
             );
         }
         catch (EmptyResultDataAccessException e){
@@ -194,7 +205,7 @@ public class WeatherRepositoryImpl implements WeatherRepository {
                         "id_Town) " +
                         "values" +
                         "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
-                        "on conflict(time) do update " +
+                        "on conflict(id_town, time) do update " +
                         "set " +
                         "summary = excluded.summary, " +
                         "apparentTemperatureHigh  = excluded.apparentTemperatureHigh, " +
