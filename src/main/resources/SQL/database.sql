@@ -15,7 +15,7 @@ CREATE TABLE weather.town(
 );
 
 CREATE TABLE weather.forecast(
-    time TIMESTAMP PRIMARY KEY,
+    time TIMESTAMP,
     summary VARCHAR(4096),
     apparentTemperatureHigh NUMERIC,
     temperatureHigh NUMERIC,
@@ -30,6 +30,7 @@ CREATE TABLE weather.forecast(
     windBearing INT,
     windSpeed NUMERIC,
     id_Town INT REFERENCES weather.town(id)
+    PRIMARY KEY (time, town)
 );
 
 COMMIT;
