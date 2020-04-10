@@ -50,7 +50,7 @@ public class WeatherService {
         return null;
     }
 
-    @Scheduled(fixedDelay = 21600000)
+    //@Scheduled(fixedDelay = 21600000)
     public void updateForecast() {
         List<Town> townList = townService.get();
         for (Town town : townList) {
@@ -72,6 +72,38 @@ public class WeatherService {
                 log.debug("There was a problem with connecting to API", exc);
             } catch (NullPointerException | IndexOutOfBoundsException exc) {
                 log.debug("Data for date: {} was not found", instant, exc);
+            }
+        }
+    }
+
+    public void addOldForecast(int days){
+        List<Town> townList = townService.get();
+        for (Town town : townList) {
+            addOldForecast(town, days);
+        }
+    }
+
+    @Async
+    public void addOldForecast(Town town, int days){
+        LocalDate from = weatherRepository.getMinDateForTown(town);
+        if (from == null){
+            from = LocalDate.now();
+        }
+        for (int i = 0; i < days; i++) {
+            Instant instant = from.minusDays(i).atStartOfDay().toInstant(ZoneOffset.UTC);
+            try {
+                weatherRepository.create(
+                        getForecast(town, instant).getDaily().getData().get(0),
+                        town
+                );
+            } catch (ForecastException exc) {
+                log.debug("There was a problem with connecting to API", exc);
+                break;
+            } catch (NullPointerException | IndexOutOfBoundsException exc) {
+                log.debug("Data for date: {} was not found", instant, exc);
+                break;
+            } catch (Exception exc){
+                log.debug("There was an error", exc);
             }
         }
     }
