@@ -101,14 +101,14 @@ public class WeatherRepositoryImpl implements WeatherRepository {
             return jdbcTemplate.queryForObject(
                     String.format("select " +
                             "date_trunc('month', time) as period, " +
-                            "avg(apparentTemperatureHigh), " +
-                            "avg(temperatureHigh), " +
-                            "avg(apparentTemperatureLow), " +
-                            "avg(temperatureLow), " +
-                            "avg(cloudCover), " +
-                            "avg(pressure), " +
-                            "avg(precipIntensity), " +
-                            "avg(windSpeed) " +
+                            "avg(apparentTemperatureHigh) as apparentTemperatureHigh, " +
+                            "avg(temperatureHigh) as temperatureHigh, " +
+                            "avg(apparentTemperatureLow) as apparentTemperatureLow, " +
+                            "avg(temperatureLow) as temperatureLow, " +
+                            "avg(cloudCover) as cloudCover, " +
+                            "avg(pressure) as pressure, " +
+                            "avg(precipIntensity) as precipIntensity, " +
+                            "avg(windSpeed) as windSpeed " +
                             "from weather.forecast " +
                             "where time between ? and ? " +
                             "and id_Town = ? " +
@@ -132,14 +132,14 @@ public class WeatherRepositoryImpl implements WeatherRepository {
             return jdbcTemplate.queryForObject(
                     String.format("select " +
                             "date_trunc('year', time) as period, " +
-                            "avg(apparentTemperatureHigh), " +
-                            "avg(temperatureHigh), " +
-                            "avg(apparentTemperatureLow), " +
-                            "avg(temperatureLow), " +
-                            "avg(cloudCover), " +
-                            "avg(pressure), " +
-                            "avg(precipIntensity), " +
-                            "avg(windSpeed) " +
+                            "avg(apparentTemperatureHigh) as apparentTemperatureHigh, " +
+                            "avg(temperatureHigh) as temperatureHigh, " +
+                            "avg(apparentTemperatureLow) as apparentTemperatureLow, " +
+                            "avg(temperatureLow) as temperatureLow, " +
+                            "avg(cloudCover) as cloudCover, " +
+                            "avg(pressure) as pressure, " +
+                            "avg(precipIntensity) as precipIntensity, " +
+                            "avg(windSpeed) as windSpeed " +
                             "from weather.forecast " +
                             "where time between ? and ? " +
                             "and id_Town = ? " +
@@ -162,20 +162,20 @@ public class WeatherRepositoryImpl implements WeatherRepository {
             return jdbcTemplate.queryForObject(
                     "select " +
                             "min(time) as period, " +
-                            "avg(apparentTemperatureHigh), " +
-                            "avg(temperatureHigh), " +
-                            "avg(apparentTemperatureLow), " +
-                            "avg(temperatureLow), " +
-                            "avg(cloudCover), " +
-                            "avg(pressure), " +
-                            "avg(precipIntensity), " +
-                            "avg(windSpeed) " +
+                            "avg(apparentTemperatureHigh) as apparentTemperatureHigh, " +
+                            "avg(temperatureHigh) as temperatureHigh, " +
+                            "avg(apparentTemperatureLow) as apparentTemperatureLow, " +
+                            "avg(temperatureLow) as temperatureLow, " +
+                            "avg(cloudCover) as cloudCover, " +
+                            "avg(pressure) as pressure, " +
+                            "avg(precipIntensity) as precipIntensity, " +
+                            "avg(windSpeed) as windSpeed " +
                             "from weather.forecast " +
                             "where time between ? and ? " +
                             "and id_Town = ?;",
                     groupRowMapper,
-                    Timestamp.valueOf(start.withDayOfMonth(1).atStartOfDay()),
-                    Timestamp.valueOf(end.withDayOfMonth(1).atStartOfDay()),
+                    Timestamp.valueOf(start.atStartOfDay()),
+                    Timestamp.valueOf(end.atStartOfDay()),
                     town.getId()
             );
         }

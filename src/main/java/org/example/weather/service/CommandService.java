@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import tk.plogitech.darksky.forecast.model.*;
 
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -25,6 +26,7 @@ public class CommandService {
     private final TownService townService;
     private final WeatherService weatherService;
     private final DateFormat formatter;
+    private final DecimalFormat decimalFormat = new DecimalFormat("#.##");
 
     private final String[] bearings = {
             "Северный",
@@ -298,16 +300,18 @@ public class CommandService {
             stringBuilder.append(String.format(
                     " Прогноз на %s:\n" +
                             "%s\n" +
-                            "Температура от %s до %s\n" +
-                            "Ощущается как от %s до %s\n" +
-                            "Скорость ветра: %s\n",
+                            "Температура от %s до %s C\n" +
+                            "Ощущается как от %s до %s C\n" +
+                            "Скорость ветра: %s м/с\n",
+                            "Давление: %s КПа\n",
                     LocalDate.ofInstant(dataPoint.getTime(), ZoneId.systemDefault()),
                     dataPoint.getSummary(),
                     dataPoint.getTemperatureLow(),
                     dataPoint.getTemperatureHigh(),
                     dataPoint.getApparentTemperatureLow(),
                     dataPoint.getApparentTemperatureHigh(),
-                    dataPoint.getWindSpeed()));
+                    dataPoint.getWindSpeed(),
+                    dataPoint.getPressure()));
             int bearing = dataPoint.getWindBearing() / 45;
             stringBuilder
                     .append(bearings[bearing])
@@ -316,6 +320,11 @@ public class CommandService {
                     .append("\n");
             if (dataPoint.getPrecipProbability() == null){
                 stringBuilder.append("Осадков не ожидается\n");
+            }
+            else {
+                stringBuilder.append("Осадки: ")
+                        .append(dataPoint.getPrecipIntensity())
+                        .append("мм/ч");
             }
             stringBuilder.append("\n\n");
         }
@@ -326,19 +335,25 @@ public class CommandService {
         StringBuilder stringBuilder = new StringBuilder();
         Daily daily = forecast.getDaily();
         for (DailyDataPoint dataPoint : daily.getData()) {
-            stringBuilder.append("Самый ").append(type).append(" ").append(period).append(":\n")
+            stringBuilder.append(String.format(
+                    "Самый %s %s на %s : %s:\n",
+                    type,
+                    period,
+                    LocalDate.ofInstant(dataPoint.getTime(), ZoneId.systemDefault()),
+                    end
+            ))
                     .append(LocalDate.ofInstant(dataPoint.getTime(), ZoneId.systemDefault())).append("\n");
             switch (type.toLowerCase()) {
                 case "холодный": {
-                    stringBuilder.append(dataPoint.getTemperatureLow());
+                    stringBuilder.append(decimalFormat.format(dataPoint.getTemperatureLow()));
                     break;
                 }
                 case "жаркий": {
-                    stringBuilder.append(dataPoint.getTemperatureHigh());
+                    stringBuilder.append(decimalFormat.format(dataPoint.getTemperatureHigh()));
                     break;
                 }
                 case "ветреный": {
-                    stringBuilder.append(dataPoint.getWindSpeed());
+                    stringBuilder.append(decimalFormat.format(dataPoint.getWindSpeed()));
                     break;
                 }
             }
@@ -348,11 +363,21 @@ public class CommandService {
 
     private String averageFormat(Forecast forecast, LocalDate start, LocalDate end) {
         StringBuilder stringBuilder = new StringBuilder();
-        Daily daily = forecast.getDaily();
-        for (DailyDataPoint dataPoint : daily.getData()) {
-            stringBuilder.append("Прогноз на ")
-                    .append(formatter.format(LocalDate.ofInstant(dataPoint.getTime(), ZoneId.systemDefault())))
-                    .append(dataPoint.getSummary());
+        List<DailyDataPoint> dataPoints = forecast.getDaily().getData();
+        for (DailyDataPoint dataPoint : dataPoints) {
+            stringBuilder.append(String.format(
+                    "Средние показатели на %s : %s:\n" +
+                            "Температура от %s до %s C\n" +
+                            "Скорость ветра: %s м/с\n" +
+                            "Осадки: %s мм/ч\n" +
+                            "Давление: %s КПа\n",
+                    LocalDate.ofInstant(dataPoint.getTime(), ZoneId.systemDefault()),
+                    end,
+                    decimalFormat.format(dataPoint.getTemperatureLow()),
+                    decimalFormat.format(dataPoint.getTemperatureHigh()),
+                    decimalFormat.format(dataPoint.getWindSpeed()),
+                    decimalFormat.format(dataPoint.getPrecipIntensity()),
+                    decimalFormat.format(dataPoint.getPressure()/10)));
         }
         return stringBuilder.toString();
     }
