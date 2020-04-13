@@ -20,4 +20,8 @@ public class TownService {
     public Town get(String town){
         return townRepository.getByName(town);
     }
+
+    public Town get(Integer id){
+        return townRepository.get(id);
+    }
 }

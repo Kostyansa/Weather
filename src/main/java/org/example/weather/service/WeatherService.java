@@ -46,11 +46,11 @@ public class WeatherService {
         return new ForecastRequestBuilder();
     }
 
-    public List<DailyDataPoint> getHistoryFor(Date start, Town town) {
-        return null;
+    public LocalDate getMinDateFor(Town town) {
+        return weatherRepository.getMinDateForTown(town);
     }
 
-    //@Scheduled(fixedDelay = 21600000)
+    @Scheduled(fixedRate = 21600000)
     public void updateForecast() {
         List<Town> townList = townService.get();
         for (Town town : townList) {

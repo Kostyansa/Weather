@@ -51,7 +51,7 @@ public class VKService {
         }
     }
 
-    @Scheduled(fixedDelay = 3000)
+    @Scheduled(fixedDelay = 500)
     public void getMessages(){
         MessagesGetLongPollHistoryQuery eventsQuery = vkApiClient
                 .messages()

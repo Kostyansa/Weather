@@ -14,6 +14,7 @@ import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -25,7 +26,7 @@ public class CommandService {
     private final UserService userService;
     private final TownService townService;
     private final WeatherService weatherService;
-    private final DateFormat formatter;
+    private final DateTimeFormatter formatter;
     private final DecimalFormat decimalFormat = new DecimalFormat("#.##");
 
     private final String[] bearings = {
@@ -83,11 +84,26 @@ public class CommandService {
             }
             case "список": {
                 return townService.get().stream().
-                        map(Town::getName).
+                        map(town -> {
+                            return town.getName() + " - " + formatter.format(weatherService.getMinDateFor(town));
+                        }).
                         reduce((identity, str) -> {
                             return identity.concat("\n").concat(str);
                         }).
                         orElseGet(() -> "Список городов пуст");
+            }
+            case "помощь": {
+                return "Список команд:\n" +
+                        "Список городов - выводит список городов для которых доступен прогноз " +
+                        "и самую раннюю дату для которой есть данные\n\n" +
+                        "Установить город <название> - устнавливает город по умолчанию для пользователя\n\n" +
+                        "Прогноз город <название> - выводит прогноз на неделю в указанном городе" +
+                        "если город не указан - в городе по умолчанию\n\n" +
+                        "Самый <холодный/жаркий/ветренный> <день/месяц/год> город <название> Дата <начало> <конец> - " +
+                        "выводит самый холодный/жаркий/ветренный день/месяц/год в городе, даты указываются в формате " +
+                        "dd.MM.yyyy, конечная дата не учитывается, даты всегда указываются в полном формате\n\n" +
+                        "Статистика город <название> Дата <начало> <конец> - выводит средние показатели температуры, " +
+                        "скорости ветра, количества осадков и давления за промежуток времени, конечная дата не учитывается\n";
             }
             case "updateforecast": {
                 try {
@@ -99,7 +115,12 @@ public class CommandService {
             }
             case "oldforecast": {
                 try {
-                    weatherService.addOldForecast(Integer.parseInt(request.getSplit()[1]));
+                    if (split.length < 2) {
+                        weatherService.addOldForecast(Integer.parseInt(request.getSplit()[1]));
+                    }
+                    else{
+                        weatherService.addOldForecast(townService.get(request.getSplit()[2]),Integer.parseInt(request.getSplit()[1]));
+                    }
                     return "Success";
                 } catch (Exception exc) {
                     return exc.getMessage();
@@ -163,10 +184,10 @@ public class CommandService {
             return request;
         }
         if (dataIndex + 1 < split.length) {
-            request.setStart(formatter.parse(split[dataIndex + 1]).toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+            request.setStart(LocalDate.from(formatter.parse(split[dataIndex + 1])));
         }
         if (dataIndex + 2 < split.length) {
-            request.setEnd(formatter.parse(split[dataIndex + 2]).toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+            request.setEnd(LocalDate.from(formatter.parse(split[dataIndex + 2])));
         }
         return request;
     }
@@ -304,7 +325,7 @@ public class CommandService {
                             "Ощущается как от %s до %s C\n" +
                             "Скорость ветра: %s м/с\n",
                             "Давление: %s КПа\n",
-                    LocalDate.ofInstant(dataPoint.getTime(), ZoneId.systemDefault()),
+                    formatter.format(LocalDate.ofInstant(dataPoint.getTime(), ZoneId.systemDefault())),
                     dataPoint.getSummary(),
                     dataPoint.getTemperatureLow(),
                     dataPoint.getTemperatureHigh(),
@@ -339,10 +360,10 @@ public class CommandService {
                     "Самый %s %s на %s : %s:\n",
                     type,
                     period,
-                    LocalDate.ofInstant(dataPoint.getTime(), ZoneId.systemDefault()),
-                    end
+                    formatter.format(LocalDate.ofInstant(dataPoint.getTime(), ZoneId.systemDefault())),
+                    formatter.format(end)
             ))
-                    .append(LocalDate.ofInstant(dataPoint.getTime(), ZoneId.systemDefault())).append("\n");
+                    .append(formatter.format(LocalDate.ofInstant(dataPoint.getTime(), ZoneId.systemDefault()))).append("\n");
             switch (type.toLowerCase()) {
                 case "холодный": {
                     stringBuilder.append(decimalFormat.format(dataPoint.getTemperatureLow()));
@@ -371,8 +392,8 @@ public class CommandService {
                             "Скорость ветра: %s м/с\n" +
                             "Осадки: %s мм/ч\n" +
                             "Давление: %s КПа\n",
-                    LocalDate.ofInstant(dataPoint.getTime(), ZoneId.systemDefault()),
-                    end,
+                    formatter.format(LocalDate.ofInstant(dataPoint.getTime(), ZoneId.systemDefault())),
+                    formatter.format(end),
                     decimalFormat.format(dataPoint.getTemperatureLow()),
                     decimalFormat.format(dataPoint.getTemperatureHigh()),
                     decimalFormat.format(dataPoint.getWindSpeed()),

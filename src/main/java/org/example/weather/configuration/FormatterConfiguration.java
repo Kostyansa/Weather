@@ -10,7 +10,7 @@ import java.time.format.DateTimeFormatter;
 public class FormatterConfiguration {
 
     @Bean
-    public SimpleDateFormat dateTimeFormatter(){
-        return new SimpleDateFormat("dd.MM.yyyy");
+    public DateTimeFormatter dateTimeFormatter(){
+        return DateTimeFormatter.ofPattern("dd.MM.yyyy");
     }
 }
