@@ -1,0 +1,5 @@
+
+.idea/
+Weather.iml
+src/main/resources/logaback.xml
+target/

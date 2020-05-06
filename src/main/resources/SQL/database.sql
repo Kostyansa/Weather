@@ -3,32 +3,34 @@ START TRANSACTION;
 create SCHEMA weather;
 
 CREATE TABLE weather."user"(
-    id SERIAL PRIMARY key,
+    id INTEGER PRIMARY KEY,
     id_Town INT REFERENCES weather.town(id)
 );
 
 CREATE TABLE weather.town(
-    id SERIAL PRIMARY key,
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(1024) UNIQUE,
     latitude NUMERIC not NULL,
     longitude NUMERIC not NULL
 );
 
 CREATE TABLE weather.forecast(
-    time DATE PRIMARY key,
+    time TIMESTAMP,
     summary VARCHAR(4096),
     apparentTemperatureHigh NUMERIC,
-    temperatureHign NUMERIC,
+    temperatureHigh NUMERIC,
     apparentTemperatureLow NUMERIC,
     temperatureLow NUMERIC,
     cloudCover NUMERIC,
     humidity NUMERIC,
     pressure NUMERIC,
     precipProbability NUMERIC,
-    precipType VARCHAR(10),
+    precipType VARCHAR(128),
     precipIntensity NUMERIC,
     windBearing INT,
     windSpeed NUMERIC,
-    id_Town INT REFERENCES weather.tow(id)
+    id_Town INT REFERENCES weather.town(id)
+    PRIMARY KEY (time, town)
 );
 
 COMMIT;
