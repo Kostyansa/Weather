@@ -115,7 +115,7 @@ public class CommandService {
             }
             case "oldforecast": {
                 try {
-                    if (split.length < 2) {
+                    if (split.length < 3) {
                         weatherService.addOldForecast(Integer.parseInt(request.getSplit()[1]));
                     }
                     else{
