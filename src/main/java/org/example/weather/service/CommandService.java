@@ -15,6 +15,7 @@ import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -55,11 +56,11 @@ public class CommandService {
     }
 
     public String route(Message message, User user) {
-        String[] split = message.getText().split(" ");
+        String[] split = message.getText().split("[\\s]+");
         Request request;
         try {
             request = parseRequest(split);
-        } catch (ParseException exc) {
+        } catch (DateTimeParseException exc) {
             return "Неправильный формат даты";
         }
         switch (request.getCommand().toLowerCase()) {
@@ -131,7 +132,7 @@ public class CommandService {
         }
     }
 
-    private Request parseRequest(String[] split) throws ParseException {
+    private Request parseRequest(String[] split) {
         Request request = new Request();
         request.setSplit(split);
         parseCommand(split, request);
@@ -172,7 +173,7 @@ public class CommandService {
         return request;
     }
 
-    private Request parseDates(String[] split, Request request) throws ParseException {
+    private Request parseDates(String[] split, Request request) {
         Integer dataIndex = null;
         for (int i = 1; i < split.length - 1; i++) {
             if (split[i].equalsIgnoreCase("Дата")) {
