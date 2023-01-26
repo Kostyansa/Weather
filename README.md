@@ -1,6 +1,6 @@
 # Weather
 
-VK Bot for forecast messaging<br/>
+VK Bot for forecast messaging and forecast history<br/>
 
 Used API:<br/>
   * Weather:<br/>
